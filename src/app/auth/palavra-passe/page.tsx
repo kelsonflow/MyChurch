@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { staff } from "@/lib/supabase";
+import { staff } from "@/lib/firebase";
 import { Brand } from "@/components/brand";
 import { AuthForm } from "@/components/auth-form";
 export default async function Password() {

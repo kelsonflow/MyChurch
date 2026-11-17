@@ -1,6 +1,7 @@
 import sharp from "sharp";
 import { randomUUID } from "node:crypto";
-import { staff, serviceDb } from "@/lib/supabase";
+import { staff } from "@/lib/firebase";
+import { firestore, bucket } from "@/lib/firebase-admin";
 import { limitedBody } from "@/lib/request-body";
 export const runtime = "nodejs";
 export async function POST(req: Request) {
@@ -8,14 +9,11 @@ export async function POST(req: Request) {
     req.headers.get("origin") !==
     new URL(process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000").origin
   )
-    return Response.json({ message: "Origem inválida" }, { status: 403 });
+    return Response.json({ message: "Origem inválida." }, { status: 403 });
   try {
-    const { supabase } = await staff();
-    const storage = serviceDb().storage;
-    if (Number(req.headers.get("content-length") || 0) > 11 * 1024 * 1024)
-      return Response.json({ message: "Máximo: 10 MB." }, { status: 413 });
-    const bounded = await limitedBody(req, 11 * 1024 * 1024);
-    const form = await new Response(new Uint8Array(bounded), {
+    await staff();
+    const body = await limitedBody(req, 11 * 1024 * 1024);
+    const form = await new Response(new Uint8Array(body), {
       headers: { "Content-Type": req.headers.get("content-type") || "" },
     }).formData();
     const file = form.get("file");
@@ -34,69 +32,71 @@ export async function POST(req: Request) {
         },
         { status: 400 },
       );
-    const buffer = Buffer.from(await file.arrayBuffer());
-    const img = sharp(buffer, { limitInputPixels: 40000000, animated: false });
-    const meta = await img.metadata();
+    const bytes = Buffer.from(await file.arrayBuffer());
+    const meta = await sharp(bytes, {
+      limitInputPixels: 40000000,
+      animated: false,
+    }).metadata();
     if (
       !["jpeg", "png", "webp"].includes(meta.format || "") ||
       (meta.pages || 1) > 1
     )
       return Response.json(
-        {
-          message:
-            "Apenas JPEG, PNG ou WebP estáticos. O conteúdo real do ficheiro é verificado.",
-        },
+        { message: "Apenas JPEG, PNG e WebP estáticos são permitidos." },
         { status: 400 },
       );
     const id = randomUUID();
-    const focalX = Math.max(
-      0,
-      Math.min(100, Number(form.get("focal_x")) || 50),
-    );
-    const focalY = Math.max(
-      0,
-      Math.min(100, Number(form.get("focal_y")) || 50),
-    );
     const uploaded: string[] = [];
     try {
       for (const [size, width] of [
         ["small", 640],
         ["large", 1600],
       ] as const) {
-        const output = await sharp(buffer, { limitInputPixels: 40000000 })
+        const output = await sharp(bytes, { limitInputPixels: 40000000 })
           .rotate()
           .resize({ width, withoutEnlargement: true })
           .webp({ quality: 82 })
           .toBuffer();
-        const path = `${id}/${size}.webp`;
-        const { error } = await storage
-          .from("media")
-          .upload(path, output, { contentType: "image/webp", upsert: false });
-        if (error) throw error;
+        const path = `media/${id}/${size}.webp`;
+        await bucket()
+          .file(path)
+          .save(output, {
+            resumable: false,
+            metadata: {
+              contentType: "image/webp",
+              cacheControl: "private, no-store",
+            },
+          });
         uploaded.push(path);
       }
-      const { error } = await supabase.from("media").insert({
-        id,
-        alt,
-        caption: String(form.get("caption") || "").slice(0, 500),
-        focal_x: focalX,
-        focal_y: focalY,
-      });
-      if (error) throw error;
+      await firestore()
+        .doc(`media/${id}`)
+        .create({
+          alt,
+          caption: String(form.get("caption") || "").slice(0, 500),
+          focal_x: 50,
+          focal_y: 50,
+          usedBy: [],
+          publishedBy: [],
+          logo: false,
+          created_at: new Date().toISOString(),
+        });
     } catch {
-      if (uploaded.length) await storage.from("media").remove(uploaded);
-      return Response.json(
-        {
-          message:
-            "Não foi possível guardar a imagem. Verifique o bucket e as permissões.",
-        },
-        { status: 500 },
+      await Promise.all(
+        uploaded.map((p) => bucket().file(p).delete({ ignoreNotFound: true })),
       );
+      throw new Error("Falha ao guardar.");
     }
-    return Response.json({ message: "Imagem carregada e otimizada.", id });
+    return Response.json({
+      message: "Imagem carregada e otimizada no Cloud Storage.",
+      id,
+    });
   } catch {
     return Response.json(
-      { message: "Acesso inválido ou ficheiro não suportado." },
+      {
+        message:
+          "Acesso inválido, imagem não suportada ou falha no Cloud Storage.",
+      },
       { status: 400 },
     );
   }

@@ -1,0 +1,9 @@
+rules_version = '2';
+service firebase.storage {
+ match /b/{bucket}/o {
+  // Originals and optimized variants are private. Cloud Run checks publication
+  // and live membership before returning bytes through /media/:id/:size.
+  // All uploads are decoded and re-encoded by the server before storage.
+  match /{allPaths=**} { allow read, write: if false; }
+ }
+}

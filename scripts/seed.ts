@@ -1,31 +1,18 @@
-import { createClient } from "@supabase/supabase-js";
-import { demoContent } from "../src/lib/demo";
-import { lisbonToUtc } from "../src/lib/model";
+import { randomUUID } from "node:crypto";
+import { firestore } from "../src/lib/firebase-admin";
+import { writeContent } from "../src/lib/store";
+import { demoContent, defaultSettings } from "../src/lib/demo";
 async function main() {
-  const s = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    { auth: { persistSession: false } },
-  );
-  const { count, error } = await s
-    .from("content")
-    .select("*", { head: true, count: "exact" });
-  if (error) throw error;
-  if (count)
+  const db = firestore();
+  const existing = await db.collection("content").limit(1).get();
+  if (!existing.empty)
     throw new Error(
-      "A base já tem conteúdos. O seed não substitui trabalho editorial.",
+      "Já existem conteúdos. O seed não substitui trabalho editorial.",
     );
-  const rows = demoContent.map(
-    ({ id, updated_at, starts_at, ends_at, ...c }) => ({
-      ...c,
-      starts_at: c.kind === "event" ? lisbonToUtc(c.data.start) : null,
-      ends_at: c.kind === "event" ? lisbonToUtc(c.data.end) : null,
-    }),
-  );
-  const { error: writeError } = await s.from("content").insert(rows);
-  if (writeError) throw writeError;
+  for (const c of demoContent) await writeContent(c, "bootstrap", randomUUID());
+  await db.doc("settings/general").set({ data: defaultSettings });
   console.log(
-    "Conteúdos de demonstração instalados e identificados. Reveja-os antes de lançar o site.",
+    "Conteúdos de demonstração guardados no Firestore. Valide-os antes de lançar o site.",
   );
 }
 main().catch((e) => {

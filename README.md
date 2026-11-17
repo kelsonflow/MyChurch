@@ -1,18 +1,20 @@
-# Missão aos Povos · Portugal
+# MyChurch · Missão aos Povos
 
-Aplicação Next.js App Router, TypeScript, Tailwind CSS e Supabase (PostgreSQL, Auth e Storage). Design em azul profundo, branco quente e dourado. Código de servidor em Node.js; não é uma exportação estática.
+Site e painel editorial em Next.js App Router, TypeScript e Tailwind. A stack de produção é **inteiramente Firebase/Google Cloud**, conforme a configuração escolhida pela igreja.
 
-## Estado da entrega
+| Necessidade | Serviço |
+| --- | --- |
+| Site público e painel `/admin` | Firebase Hosting, com reescrita para Cloud Run |
+| Eventos, páginas, textos, vídeos, versões e mensagens | Cloud Firestore |
+| Login, ativação e recuperação | Firebase Authentication |
+| Fotografias e versões WebP | Cloud Storage for Firebase |
+| Convites, permissões e validação de escritas | Servidor Next.js no Cloud Run |
 
-O site público pode ser aberto sem credenciais, em **modo de demonstração explícito**. Nesse modo os formulários não fingem enviar mensagens e a administração não aceita credenciais fictícias. Com Supabase configurado, todas as leituras e escritas usam a base de dados; erros de ligação não são disfarçados com dados de demonstração.
+Projeto: `mychurch-kelsonflow`. Conta técnica: `mychurch-runtime`. Região do servidor, Firestore e imagens: `europe-west4`. O plano Blaze está associado à conta autorizada e tem um alerta mensal de 5 EUR. **O alerta não interrompe cobranças superiores.** O servidor tem zero instâncias mínimas e duas máximas.
 
-Implementados: páginas públicas, agenda com categorias/arquivo/estados/calendário, ministérios, vídeos com consentimento, galeria acessível, formulário persistente, painel, editor estruturado, imagens WebP, autenticação e recuperação Supabase, convites, perfis, suspensão/revogação, versões recuperáveis e auditoria. O ficheiro SQL aplica RLS e proteções na base de dados.
+## Abrir localmente
 
-**A ativação em produção depende** de um projeto Supabase, SMTP transacional, domínio/alojamento, aplicação da migration e validação dos conteúdos. O envio real de emails e os fluxos Auth/Storage não foram executados contra uma conta externa nesta entrega. Os testes PostgreSQL usam um motor real embebido, com tabelas de Auth/Storage de teste, não os serviços GoTrue/Storage do Supabase.
-
-## Arranque local
-
-Requer Node.js 22.13 ou superior e npm.
+Requer Node.js 22 e npm.
 
 ```powershell
 npm ci
@@ -20,103 +22,64 @@ Copy-Item .env.example .env.local
 npm run dev
 ```
 
-Abra [http://localhost:3000](http://localhost:3000). A [área privada](http://localhost:3000/admin) apresenta as instruções de configuração enquanto as variáveis estiverem vazias. Webpack é usado para evitar problemas de processos do Turbopack em ambientes Windows restritos.
+Abra [localhost:3000](http://localhost:3000). Sem `FIREBASE_PROJECT_ID`, o site apresenta os exemplos identificados como demonstração e não simula login ou envio de mensagens. Com Firebase configurado, lê e escreve dados reais; erros do serviço não são escondidos por dados de exemplo.
 
-## 1. Preparar o Supabase
+Para desenvolvimento ligado ao projeto, preencha as variáveis e configure Application Default Credentials com a sua conta autorizada. Em produção o SDK Admin utiliza a identidade gerida do Cloud Run: não há chave de conta de serviço guardada no repositório ou no frontend.
 
-1. Crie um projeto Supabase, preferencialmente numa região europeia apropriada à organização. Registe a decisão sobre os fornecedores e transferências de dados.
-2. Execute **uma vez**, num projeto novo, [001_initial.sql](supabase/migrations/001_initial.sql) no SQL Editor ou através de `supabase db push` num projeto ligado. A migration cria tabelas, funções, RLS e o bucket **privado** `media`.
-3. Preencha `.env.local` com URL, publishable key, service-role key e `NEXT_PUBLIC_SITE_URL`. A service-role key só existe no servidor e nos scripts de administração. Nunca use um prefixo `NEXT_PUBLIC_` para essa chave.
-4. Gere `CONTACT_HASH_SECRET` com o comando indicado em `.env.example`.
-5. Em Authentication, **desative novos registos públicos** e autenticação anónima. Não há página de registo nesta aplicação. A membership RLS também impede qualquer conta sem perfil ativo de editar conteúdos.
-6. Configure Site URL e Redirect URLs para `https://seu-dominio/auth/confirm` e, no desenvolvimento, `http://localhost:3000/auth/confirm`. Use destinos exatos em produção.
-7. Configure SMTP próprio no Supabase (fornecedor transacional à escolha), remetente e domínio autenticado. Convites e recuperação usam este SMTP; os limites do email de teste do Supabase não são adequados à produção.
-8. Defina validade dos links OTP/convites para **3600 segundos** e mantenha limites de autenticação ativos. Configure palavra-passe mínima de 12 caracteres e proteção de palavras-passe comprometidas, quando disponível no plano.
-9. Altere os templates de email para usar os links abaixo. Não envie ligações ou tokens por chats públicos.
+## Conteúdos e equipa
 
-Template **Invite user**:
+Estão implementados: páginas estruturadas, secções opcionais, eventos com categorias/estados/arquivo e calendário ICS, ministérios, vídeos YouTube com consentimento, álbuns acessíveis, biblioteca de imagens, mensagens privadas, convites, suspensão/revogação, histórico e recuperação de versões.
 
-```html
-<a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=invite">Aceitar convite e definir palavra-passe</a>
-```
+Os exemplos não são informação institucional confirmada. Valide morada, horários, contactos, liderança, eventos, direitos das fotografias e minutas legais antes de assinalar a validação em Configurações. O formulário fica desativado até essa confirmação.
 
-Template **Reset password**:
+Leia o [guia da equipa](docs/GUIA-EQUIPA.md) e a [origem dos conteúdos](docs/CONTEUDOS.md). Imagens reais em alta resolução podem ser carregadas pelo painel; não se aplicou o ensaio de imagem gerada por IA.
 
-```html
-<a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=recovery">Recuperar acesso</a>
-```
+## Segurança
 
-O token é verificado pelo Supabase, tem utilização única e expiração definida no serviço. O callback aceita apenas `invite`, `recovery` ou um código PKCE válido e usa um destino interno fixo. Os links podem ser consumidos por scanners de email; nesses casos envie novo convite/recuperação e reveja a configuração do fornecedor.
+- O registo público de utilizadores está desativado no Firebase Authentication. Apenas o servidor autorizado cria acessos.
+- O login usa a API oficial Firebase e um cookie HttpOnly/Secure/SameSite `__session`, o único cookie encaminhado pelo Firebase Hosting. Um identificador de sessão e a versão do perfil são verificados no Firestore em cada acesso protegido.
+- A suspensão altera imediatamente a versão/status do perfil, revoga tokens e desativa a conta Authentication. Sessões antigas deixam de ser aceites.
+- Escritas de clientes diretos em Firestore e Storage são recusadas pelas regras. O servidor aplica autenticação, perfis e validação antes de usar o SDK Admin.
+- Conteúdos publicados têm leitura pública. Rascunhos, revisões, mensagens, sessões e auditoria estão protegidos. Perfis são visíveis apenas ao próprio utilizador e a administradores autorizados.
+- O último administrador ativo é protegido por uma transação sobre `system/access`. As permissões nunca dependem de botões escondidos.
+- Cada alteração editorial grava uma versão privada com autor/data. A recuperação cria um rascunho e preserva o estado atual.
+- Imagens só são gravadas após validação de tamanho, formato real e píxeis, e são regravadas em WebP sem EXIF. O bucket é privado; a rota de media verifica publicação ou sessão antes de servir bytes.
+- O servidor limita tentativas de login/recuperação e mensagens; aceita texto seguro e negrito, sem HTML ou embeds arbitrários. O segredo HMAC fica no Secret Manager.
 
-## 2. Primeiro administrador, sem palavra-passe predefinida
+As regras não limitam um proprietário do projeto ou uma conta IAM administrativa: essas identidades técnicas são de confiança e devem ter poucos responsáveis. O SDK Admin ignora regras de clientes, pelo que as verificações em `staff()` e nos serviços de escrita são essenciais.
 
-Na sua máquina de confiança, com as variáveis locais configuradas:
+## Primeiro administrador e dados iniciais
 
-```powershell
-npm run bootstrap -- responsavel@dominio-da-igreja.pt
-```
-
-O script recusa criar outro administrador se já existir um ativo. Envia um convite Supabase; o destinatário define a sua própria palavra-passe. Nenhuma palavra-passe, token ou chave é impressa. Se o convite expirar, use a recuperação de acesso para o email já criado.
-
-Para instalar os exemplos editáveis, **apenas numa base sem conteúdos**:
+Não existem palavras-passe predefinidas. Num projeto novo, com ADC e `.env.local` configurados:
 
 ```powershell
 npm run seed
+npm run bootstrap -- responsavel@dominio-da-igreja.pt
 ```
 
-O seed identifica os exemplos como demonstração e recusa substituir conteúdos existentes. Não cria testemunhos, números de membros ou contactos. A liderança atual não é inferida do site antigo. Arquive os eventos fictícios e valide os textos antes do lançamento.
+O seed recusa uma base com conteúdos. O bootstrap recusa um projeto com administrador ativo. O Firebase envia uma ligação pessoal de utilização única para definir a palavra-passe; depois o destinatário entra em `/admin`. A palavra-passe deve ter pelo menos 12 caracteres. Se o email expirar, use Recuperar acesso. Os administradores seguintes são convidados no painel.
 
-## 3. Alojamento
+Para manutenção local com um token Google temporário e sem guardar uma chave, o script `scripts/firebase-admin-task.mjs` aceita apenas `seed` e `bootstrap`, recebendo o token por stdin. Exige `FIREBASE_PROJECT_ID` explícito e, para enviar emails, a configuração pública em `.firebase/runtime-env.json`. O token nunca é impresso nem gravado.
 
-Use um alojamento compatível com **Next.js Node.js**, como um servidor Node ou um fornecedor com suporte Next.js. Sites requer um Worker ESM; este projeto segue a stack Next.js solicitada e precisa de um adaptador próprio antes de poder ser alojado em Workers/Sites. Não foi publicado um endereço de produção.
-
-```powershell
-npm ci
-npm test
-npm run build
-npm start
-```
-
-Configure as variáveis no gestor de segredos do alojamento. As variáveis `NEXT_PUBLIC_*` precisam de estar presentes na compilação. Defina a URL HTTPS definitiva, redirecione HTTP para HTTPS e ative HSTS no proxy depois de confirmar o certificado. Sirva um único domínio canónico.
-
-O proxy de produção deve substituir, e não aceitar cegamente do cliente, `X-Forwarded-For`. O formulário usa esse endereço apenas para gerar uma chave HMAC temporária de limitação de pedidos, sem guardar o IP original. Defina um limite de corpo de **11 MB** no proxy para uploads e um limite global de pedidos no edge. Plataformas com limite de request inferior a 11 MB exigem redução do limite no upload ou um adaptador de upload direto com validação posterior.
-
-As consultas públicas são dinâmicas e não ficam em cache entre utilizadores. Cada página volta a ler a base após publicação; não é necessário novo deployment. As rotas privadas e as imagens privadas usam `no-store`. Imagens associadas a conteúdos publicados ficam acessíveis pela rota de media; ao despublicar deixam de estar acessíveis, salvo cópias que alguém já tenha descarregado.
-
-Opcionalmente configure `RESEND_API_KEY`, `MAIL_FROM` e `CONTACT_NOTIFY_EMAIL` para receber um aviso de mensagem nova. A mensagem completa fica na área privada. Uma falha na notificação não perde a mensagem nem transforma um envio persistido num erro. Não ative análise externa sem implementar o consentimento apropriado.
-
-## Segurança e organização
-
-- `src/app/(public)`: páginas renderizadas no servidor e metadados.
-- `src/app/admin/(protected)`: dashboard e gestão autenticada.
-- `src/app/admin/actions.ts`: validação e autorização de cada escrita; ações Next.js protegidas contra origens cruzadas.
-- `src/lib/model.ts`: schemas Zod, datas de Lisboa e validação estrita de YouTube.
-- `supabase/migrations`: permissões, triggers e histórico.
-- `tests`: testes de domínio e RLS em PostgreSQL embebido.
-
-RLS consulta o perfil ativo **e uma sessão ainda existente em `auth.sessions`**. Suspensão, alteração de perfil e revogação eliminam essas sessões numa transação. Um JWT antigo não recupera acesso direto à API. O trigger do último administrador usa bloqueio transacional. Editores não escrevem em perfis/configurações, nem leem auditoria de acessos. As mensagens não têm política pública de leitura ou escrita. Só o backend pode invocar a função limitada de receção.
-
-Os conteúdos formatados aceitam parágrafos e negrito, renderizados como texto React; HTML e embeds arbitrários não são interpretados. Os ficheiros são decodificados com Sharp, limitados em bytes/píxeis e regravados como WebP sem metadados EXIF. SVG, GIF animado e ficheiros disfarçados são recusados. O ponto focal e o texto alternativo são editáveis e aplicados na apresentação.
-
-O histórico não inclui mensagens recebidas. As revisões são privadas, conservam o autor e restauram como rascunho. O conteúdo editorial é arquivado em vez de apagado. Os tokens de convite são geridos pelo Supabase, não pelo histórico editorial.
-
-## Backups e recuperação
-
-1. Ative backups automáticos/PITR de PostgreSQL conforme o plano Supabase. Defina frequência, retenção e responsáveis com a igreja.
-2. Faça exportações cifradas de `public` e das contas Auth pelo procedimento suportado do fornecedor. Um dump só das tabelas editoriais não restaura os acessos. Trate os backups como dados privados.
-3. Copie separadamente o bucket Storage `media`: backups de PostgreSQL **não incluem os bytes dos ficheiros**. Preserve os caminhos UUID/small.webp e UUID/large.webp.
-4. Faça uma recuperação de ensaio num projeto isolado: restaure esquema/migrations e dados com dependências, recupere Auth pelo procedimento do Supabase, depois copie os objetos Storage. Não volte a executar o seed numa base restaurada.
-5. Atualize variáveis, URLs e SMTP no ambiente de ensaio. Confirme login, permissões e imagens antes de trocar a aplicação de produção.
-6. Após incidente de segurança, rode os segredos, invalide sessões, reverifique os acessos e obrigue à recuperação de palavra-passe. Nunca publique dumps, `.env.local` ou ligações de recuperação.
-
-## Verificação
+## Testes e deploy
 
 ```powershell
 npm run typecheck
 npm test
+npm run test:firebase
 npm run build
 ```
 
-O teste de base de dados aplica a migration real em PostgreSQL (PGlite), cria utilizadores/sessões de teste e executa consultas como `anon` e `authenticated`. Verifica separação de rascunhos, permissões do editor, suspensão com JWT antigo, proteção do último administrador e recuperação de versão. Não substitui a verificação do SMTP, templates Auth e Storage no projeto Supabase.
+Os testes de integração usam os emuladores oficiais Authentication/Firestore/Storage e exercitam sessões, regras e transações reais da aplicação. Em `npm test`, são omitidos quando os emuladores não estão ativos; `test:firebase` inicia-os com `firebase.emulators.json` e o projeto fictício `demo-mychurch`. Nenhum teste de emulador deve apontar para dados reais.
 
-Consulte [guia da equipa](docs/GUIA-EQUIPA.md), [origem dos conteúdos](docs/CONTEUDOS.md) e [verificação de lançamento](docs/VERIFICACAO.md).
+O [guia de Firebase](docs/FIREBASE.md) explica Cloud Build, Cloud Run e Hosting. A publicação não é uma exportação estática: o servidor continua a executar autenticação e APIs. Uma alteração de conteúdo publicada no painel fica disponível sem novo deployment.
+
+## Backups e restauro
+
+Defina retenção e responsáveis com a igreja. Firestore, Authentication e os bytes do Storage são conjuntos distintos: um export Firestore não inclui utilizadores Auth nem fotografias.
+
+1. Configure backups agendados/PITR de Firestore conforme a retenção aprovada, considerando os custos no orçamento. Estas opções não são anunciadas como ativas apenas por existir um deploy.
+2. Faça exports Firestore para um bucket de backup privado. Exporte separadamente Authentication pelo procedimento oficial Firebase e mantenha os parâmetros de hash como segredos.
+3. Ative uma política de recuperação de objetos/versionamento ou cópias do bucket de imagens. Guarde os caminhos `media/UUID/small.webp` e `large.webp`.
+4. Ensaie o restauro num projeto isolado: Auth, documentos e regras Firestore, imagens, IAM e segredos. Preserve os UIDs dos perfis e os IDs das imagens. O documento `system/access` deve corresponder aos administradores restaurados.
+5. Após incidente, revogue sessões e tokens, rode segredos afetados e reveja membros/IAM. Não publique exports, tokens, ficheiros ADC ou dados pessoais.

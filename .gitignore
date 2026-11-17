@@ -4,3 +4,10 @@ node_modules/
 !.env.example
 *.tsbuildinfo
 test-results/
+.firebase/
+firebase-debug.log
+firebase-debug.*.log
+ui-debug.log
+firestore-debug.log
+storage-debug.log
+firebase-export-*/

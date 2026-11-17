@@ -1,5 +1,6 @@
+import { listRecords, getRecord } from "@/lib/store";
 import { redirect } from "next/navigation";
-import { staff } from "@/lib/supabase";
+import { staff } from "@/lib/firebase";
 import { dateLabel } from "@/lib/model";
 export default async function Audit() {
   let session;
@@ -8,12 +9,9 @@ export default async function Audit() {
   } catch {
     redirect("/admin");
   }
-  const { data, error } = await session.supabase
-    .from("audit_log")
-    .select("*")
-    .order("created_at", { ascending: false })
-    .limit(200);
-  if (error) throw error;
+  const data = (await listRecords<any>("audit_log"))
+    .sort((a, b) => String(b.created_at).localeCompare(String(a.created_at)))
+    .slice(0, 200);
   return (
     <>
       <div className="admin-heading">

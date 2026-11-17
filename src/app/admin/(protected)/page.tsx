@@ -1,13 +1,12 @@
+import { listRecords, getRecord } from "@/lib/store";
 import Link from "next/link";
-import { staff } from "@/lib/supabase";
+import { staff } from "@/lib/firebase";
 import { dateLabel, type Content, eventIsUpcoming } from "@/lib/model";
 export default async function Dashboard() {
-  const { supabase } = await staff();
-  const { data, error } = await supabase
-    .from("content")
-    .select("*")
-    .order("updated_at", { ascending: false });
-  if (error) throw error;
+  await staff();
+  const data = (await listRecords<any>("content")).sort((a, b) =>
+    String(b.updated_at).localeCompare(String(a.updated_at)),
+  );
   const all = (data || []) as Content[];
   const upcoming = all
     .filter((c) => c.status === "published" && eventIsUpcoming(c))

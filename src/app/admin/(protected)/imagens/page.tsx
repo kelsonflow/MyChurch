@@ -1,12 +1,11 @@
-import { staff } from "@/lib/supabase";
+import { listRecords, getRecord } from "@/lib/store";
+import { staff } from "@/lib/firebase";
 import { MediaManager } from "@/components/media-manager";
 export default async function Media() {
-  const { supabase } = await staff();
-  const { data, error } = await supabase
-    .from("media")
-    .select("*")
-    .order("created_at", { ascending: false });
-  if (error) throw error;
+  await staff();
+  const data = (await listRecords<any>("media")).sort((a, b) =>
+    String(b.created_at).localeCompare(String(a.created_at)),
+  );
   return (
     <>
       <div className="admin-heading">

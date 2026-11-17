@@ -3,7 +3,7 @@ import { ArrowUpRight, MapPin, Clock, ArrowRight } from "lucide-react";
 import { Brand } from "./brand";
 import { Navigation } from "./navigation";
 import { settings } from "@/lib/content";
-import { configured } from "@/lib/supabase";
+import { configured } from "@/lib/firebase";
 export async function SiteShell({ children }: { children: React.ReactNode }) {
   const s = await settings();
   return (

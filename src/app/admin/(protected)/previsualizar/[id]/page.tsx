@@ -1,5 +1,6 @@
+import { listRecords, getRecord } from "@/lib/store";
 import { notFound } from "next/navigation";
-import { staff } from "@/lib/supabase";
+import { staff } from "@/lib/firebase";
 import {
   PageIntro,
   Photo,
@@ -15,12 +16,8 @@ export default async function Preview({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const { supabase } = await staff();
-  const { data: c } = await supabase
-    .from("content")
-    .select("*")
-    .eq("id", id)
-    .single();
+  await staff();
+  const c = await getRecord<any>("content", id);
   if (!c) notFound();
   return (
     <>

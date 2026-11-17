@@ -1,6 +1,7 @@
 import { createHmac } from "node:crypto";
 import { z } from "zod";
-import { serviceDb, configured } from "@/lib/supabase";
+import { configured, firestore } from "@/lib/firebase-admin";
+import { rateLimit } from "@/lib/store";
 import { settings } from "@/lib/content";
 import { limitedBody } from "@/lib/request-body";
 const schema = z.object({
@@ -53,15 +54,9 @@ export async function POST(req: Request) {
     const key = createHmac("sha256", process.env.CONTACT_HASH_SECRET)
       .update(ip)
       .digest("hex");
-    const service = serviceDb();
-    const { error } = await service.rpc("submit_message", {
-      p_name: parsed.data.name,
-      p_email: parsed.data.email,
-      p_subject: parsed.data.subject,
-      p_message: parsed.data.message,
-      p_key: key,
-    });
-    if (error)
+    try {
+      await rateLimit(`contact-${key}`, 4, 60 * 60 * 1000);
+    } catch {
       return Response.json(
         {
           message:
@@ -69,6 +64,11 @@ export async function POST(req: Request) {
         },
         { status: 429 },
       );
+    }
+    const { website, ...message } = parsed.data;
+    await firestore()
+      .collection("messages")
+      .add({ ...message, created_at: new Date().toISOString() });
     if (
       process.env.RESEND_API_KEY &&
       process.env.MAIL_FROM &&

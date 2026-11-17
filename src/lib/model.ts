@@ -17,6 +17,7 @@ export type Content = {
   status: "draft" | "published" | "archived";
   data: Record<string, any>;
   updated_at: string;
+  updated_by?: string | null;
   starts_at?: string | null;
   ends_at?: string | null;
 };

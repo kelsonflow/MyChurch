@@ -1,5 +1,5 @@
 import { settings } from "@/lib/content";
-import { configured } from "@/lib/supabase";
+import { configured } from "@/lib/firebase";
 import { PageIntro } from "@/components/content-view";
 import { ContactForm } from "@/components/contact-form";
 export const metadata = {

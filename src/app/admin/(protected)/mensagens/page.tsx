@@ -1,14 +1,12 @@
-import { staff } from "@/lib/supabase";
+import { listRecords, getRecord } from "@/lib/store";
+import { staff } from "@/lib/firebase";
 import { dateLabel } from "@/lib/model";
 import { DeleteMessage } from "@/components/delete-message";
 export default async function Inbox() {
-  const { supabase, profile } = await staff();
-  const { data, error } = await supabase
-    .from("messages")
-    .select("*")
-    .order("created_at", { ascending: false })
-    .limit(100);
-  if (error) throw error;
+  const { profile } = await staff();
+  const data = (await listRecords<any>("messages"))
+    .sort((a, b) => String(b.created_at).localeCompare(String(a.created_at)))
+    .slice(0, 100);
   return (
     <>
       <div className="admin-heading">

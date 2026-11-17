@@ -1,0 +1,12 @@
+steps:
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - -t
+      - europe-west4-docker.pkg.dev/$PROJECT_ID/mychurch/web:$BUILD_ID
+      - .
+images:
+  - europe-west4-docker.pkg.dev/$PROJECT_ID/mychurch/web:$BUILD_ID
+timeout: 900s
+options:
+  logging: CLOUD_LOGGING_ONLY

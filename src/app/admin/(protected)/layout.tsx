@@ -14,7 +14,7 @@ import {
   ArrowUpRight,
   Heart,
 } from "lucide-react";
-import { staff } from "@/lib/supabase";
+import { staff } from "@/lib/firebase";
 import { logout } from "../actions";
 import { Brand } from "@/components/brand";
 export default async function Protected({

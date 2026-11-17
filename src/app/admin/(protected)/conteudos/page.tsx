@@ -1,5 +1,6 @@
+import { listRecords, getRecord } from "@/lib/store";
 import Link from "next/link";
-import { staff } from "@/lib/supabase";
+import { staff } from "@/lib/firebase";
 import { kinds, labels, type Kind, type Content, dateLabel } from "@/lib/model";
 export default async function ContentList({
   searchParams,
@@ -8,13 +9,10 @@ export default async function ContentList({
 }) {
   const { tipo } = await searchParams;
   const kind = kinds.includes(tipo as Kind) ? (tipo as Kind) : "page";
-  const { supabase } = await staff();
-  const { data, error } = await supabase
-    .from("content")
-    .select("*")
-    .eq("kind", kind)
-    .order("updated_at", { ascending: false });
-  if (error) throw error;
+  await staff();
+  const data = (await listRecords<any>("content"))
+    .filter((c) => c.kind === kind)
+    .sort((a, b) => String(b.updated_at).localeCompare(String(a.updated_at)));
   return (
     <>
       <div className="admin-heading">

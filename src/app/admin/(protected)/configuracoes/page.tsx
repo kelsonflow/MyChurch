@@ -1,5 +1,6 @@
+import { listRecords, getRecord } from "@/lib/store";
 import { redirect } from "next/navigation";
-import { staff } from "@/lib/supabase";
+import { staff } from "@/lib/firebase";
 import { settings } from "@/lib/content";
 import { SettingsEditor } from "@/components/settings-editor";
 export default async function SettingsPage() {
@@ -9,10 +10,7 @@ export default async function SettingsPage() {
   } catch {
     redirect("/admin");
   }
-  const [s, { data: media }] = await Promise.all([
-    settings(),
-    session.supabase.from("media").select("*"),
-  ]);
+  const [s, media] = await Promise.all([settings(), listRecords("media")]);
   return (
     <>
       <div className="admin-heading">

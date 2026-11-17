@@ -1,5 +1,6 @@
+import { listRecords, getRecord } from "@/lib/store";
 import { redirect } from "next/navigation";
-import { staff } from "@/lib/supabase";
+import { staff } from "@/lib/firebase";
 import { UserManager } from "@/components/user-manager";
 export default async function Users() {
   let s;
@@ -8,11 +9,9 @@ export default async function Users() {
   } catch {
     redirect("/admin");
   }
-  const { data, error } = await s.supabase
-    .from("profiles")
-    .select("*")
-    .order("created_at");
-  if (error) throw error;
+  const data = (await listRecords<any>("profiles")).sort((a, b) =>
+    String(b.created_at).localeCompare(String(a.created_at)),
+  );
   return (
     <>
       <div className="admin-heading">

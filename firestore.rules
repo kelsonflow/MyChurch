@@ -1,0 +1,15 @@
+rules_version = '2';
+service cloud.firestore {
+ match /databases/{database}/documents {
+  function staff() { return request.auth != null && exists(/databases/$(database)/documents/profiles/$(request.auth.uid)) && get(/databases/$(database)/documents/profiles/$(request.auth.uid)).data.status == 'active'; }
+  function admin() { return staff() && get(/databases/$(database)/documents/profiles/$(request.auth.uid)).data.role == 'admin'; }
+  match /content/{id} { allow read: if resource.data.status == 'published' || staff(); allow write: if false; }
+  match /settings/general { allow read: if true; allow write: if false; }
+  match /profiles/{uid} { allow read: if request.auth != null && (request.auth.uid == uid || admin()); allow write: if false; }
+  match /revisions/{id} { allow read: if staff(); allow write: if false; }
+  match /messages/{id} { allow read: if staff(); allow write: if false; }
+  match /audit_log/{id} { allow read: if admin(); allow write: if false; }
+  match /media/{id} { allow read: if staff() || resource.data.logo == true || resource.data.publishedBy.size() > 0; allow write: if false; }
+  match /{document=**} { allow read, write: if false; }
+ }
+}

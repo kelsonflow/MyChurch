@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Brand } from "@/components/brand";
 import { AuthForm } from "@/components/auth-form";
-import { configured } from "@/lib/supabase";
+import { configured } from "@/lib/firebase";
 export default function Login() {
   return (
     <main className="auth-page">
@@ -13,7 +13,7 @@ export default function Login() {
           <AuthForm />
         ) : (
           <p className="notice">
-            O Supabase ainda não está configurado. Siga o README para ativar
+            O Firebase ainda não está configurado. Siga o README para ativar
             autenticação, base de dados e o primeiro administrador. Não existem
             credenciais predefinidas.
           </p>
