@@ -20,11 +20,7 @@ export async function Brand({
       aria-label={`${name || "Missão aos Povos"} — início`}
     >
       {logo ? (
-        <img
-          className="brand-logo"
-          src={imageUrl(logo, "small")}
-          alt={name || "Missão aos Povos"}
-        />
+        <img className="brand-logo" src={imageUrl(logo, "small")} alt="" />
       ) : (
         <>
           <svg viewBox="0 0 44 48" fill="none" aria-hidden="true">
@@ -34,14 +30,12 @@ export async function Brand({
               strokeWidth="2"
             />
           </svg>
-          <span>
-            {name && name !== "Assembleia de Deus — Missão aos Povos"
-              ? name
-              : "MISSÃO AOS POVOS"}
-            <small>ASSEMBLEIA DE DEUS · PORTUGAL</small>
-          </span>
         </>
       )}
+      <span>
+        {name || "Missão aos Povos"}
+        <small>ASSEMBLEIA DE DEUS · PORTUGAL</small>
+      </span>
     </Link>
   );
 }

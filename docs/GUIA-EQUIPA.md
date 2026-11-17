@@ -12,6 +12,8 @@ Use **Rascunho privado**, guarde e abra a pré-visualização. Depois selecione 
 
 As secções na página `primeira-visita` tornam-se perguntas frequentes. Na página `a-igreja`, use-as para missão, visão, valores, história e liderança. Os títulos/textos de contacto e o rodapé são geridos em Configurações por um administrador.
 
+Na página `inicio`, **Título principal da página inicial** altera a frase grande de abertura e **Imagem principal da página inicial** altera a fotografia de fundo do destaque. Pode carregar uma nova fotografia diretamente nesse campo. Guarde e publique para aplicar as alterações. Em **Configurações**, existe também um atalho direto para este editor.
+
 ## Eventos
 
 Abra **Eventos → Criar conteúdo**. Preencha título, categoria, início/fim, local, descrição e imagem. As datas são interpretadas em **Europe/Lisbon**, com mudança de hora automática. Um encontro de vários dias usa datas de início/fim diferentes. A hora inexistente na mudança de primavera é recusada; na hora repetida do outono confirme cuidadosamente a pré-visualização.
@@ -45,3 +47,5 @@ Em **Utilizadores**, convide uma pessoa pelo seu email e escolha Editor ou Admin
 Em **Configurações**, atualize marca/logótipo, email, telefone, morada, horários, mapa, redes sociais e SEO. Só assinale a validação institucional depois de verificar os dados e completar a política de privacidade. Nenhuma credencial técnica é editada pelo painel.
 
 Na área **Logótipo e ícone do site**, selecione uma imagem da biblioteca ou carregue o ficheiro diretamente. Use de preferência um PNG quadrado com fundo transparente. **Guardar configurações** aplica o logótipo ao cabeçalho, rodapé, painel e páginas de acesso e gera os ícones do navegador e do ecrã inicial do telemóvel. Os ícones preservam as proporções da imagem. Para repor a marca original, escolha **Sem imagem / padrão** e guarde. Páginas que já estejam abertas devem ser atualizadas para mostrar a alteração.
+
+O campo **Nome da igreja / título do site** altera o nome mostrado junto ao logótipo e o título do navegador. O nome continua visível mesmo quando carrega um logótipo personalizado. A frase grande da página inicial é editada separadamente na página `inicio`.

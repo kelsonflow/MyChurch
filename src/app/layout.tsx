@@ -22,6 +22,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const s = await settings();
   return {
     ...baseMetadata,
+    title: { default: s.name, template: `%s | ${s.name}` },
     description: s.seoDescription,
     icons: {
       icon: [

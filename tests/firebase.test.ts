@@ -211,7 +211,21 @@ test(
     );
     assert.equal((await get(`/media/${uploaded.id}/large`)).status, 200);
     const { defaultSettings } = await import("../src/lib/demo");
-    await writeSettings({ ...defaultSettings, logo: uploaded.id }, "fixture");
+    await save({
+      kind: "page",
+      title: "Titulo principal editavel",
+      slug: "inicio",
+      status: "published",
+      data: { image: uploaded.id, subtitle: "Subtitulo editavel", demo: false },
+    });
+    const homeHtml = await (await get("/")).text();
+    assert.ok(homeHtml.includes("<h1>Titulo principal editavel</h1>"));
+    assert.ok(homeHtml.includes(`/media/${uploaded.id}/large`));
+    const brandingName = "Igreja da Comunidade";
+    await writeSettings(
+      { ...defaultSettings, name: brandingName, logo: uploaded.id },
+      "fixture",
+    );
     for (const page of [
       "/",
       "/contactos",
@@ -225,6 +239,14 @@ test(
       assert.ok(
         html.includes(`/media/${uploaded.id}/small`),
         `Custom brand on ${page}`,
+      );
+      assert.ok(
+        html.includes(`<span>${brandingName}`),
+        `Visible name beside logo on ${page}`,
+      );
+      assert.ok(
+        new RegExp(`<title>[^<]*${brandingName}`).test(html),
+        `Editable browser title on ${page}`,
       );
       assert.ok(
         html.includes(`/api/brand-icon?v=${uploaded.id}`),

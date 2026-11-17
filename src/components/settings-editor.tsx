@@ -7,9 +7,11 @@ import { ImagePicker } from "./image-picker";
 export function SettingsEditor({
   initial,
   media,
+  homeId,
 }: {
   initial: Settings;
   media: Media[];
+  homeId?: string;
 }) {
   const [data, setData] = useState(initial);
   const [result, setResult] = useState<ActionResult>({});
@@ -49,7 +51,16 @@ export function SettingsEditor({
     >
       <section className="admin-panel form-stack">
         <h2>Identidade e contactos</h2>
-        {field("name", "Nome da igreja")}
+        {field("name", "Nome da igreja / título do site")}
+        <p className="form-note">
+          Este nome aparece junto ao logótipo, no cabeçalho, rodapé, painel e
+          título do navegador. O logótipo e o nome são apresentados em conjunto.
+        </p>
+        {homeId && (
+          <a className="text-link" href={`/admin/conteudos/${homeId}`}>
+            Editar o título e a imagem principal da página inicial ↗
+          </a>
+        )}
         {field("tagline", "Frase de identidade / rodapé")}
         {field("contactTitle", "Título do convite de contacto")}
         {field("contactText", "Texto do convite de contacto")}

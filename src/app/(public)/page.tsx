@@ -71,7 +71,7 @@ export default async function Home() {
             </Link>
           </div>
           <div className="hero-foot">
-            <span>ASSEMBLEIA DE DEUS · PORTUGAL</span>
+            <span>{s.name}</span>
             <span>{s.tagline}</span>
           </div>
         </div>

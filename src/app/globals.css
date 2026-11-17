@@ -1,13 +1,16 @@
 @import "tailwindcss";
 .brand-logo {
   width: auto;
-  max-width: 220px;
+  max-width: 56px;
   max-height: 56px;
   object-fit: contain;
+  flex-shrink: 0;
 }
 .brand span {
   white-space: normal !important;
   max-width: 260px;
+  overflow-wrap: anywhere;
+  min-width: 0;
 }
 .first-visit h2 {
   max-width: 680px;
@@ -172,7 +175,8 @@ p {
   align-items: center;
   gap: 12px;
   color: var(--navy);
-  flex-shrink: 0;
+  flex-shrink: 1;
+  min-width: 0;
 }
 .brand svg {
   width: 39px;

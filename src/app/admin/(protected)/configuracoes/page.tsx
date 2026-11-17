@@ -1,7 +1,7 @@
 import { listRecords, getRecord } from "@/lib/store";
 import { redirect } from "next/navigation";
 import { staff } from "@/lib/firebase";
-import { settings } from "@/lib/content";
+import { settings, content } from "@/lib/content";
 import { SettingsEditor } from "@/components/settings-editor";
 export default async function SettingsPage() {
   let session;
@@ -10,7 +10,11 @@ export default async function SettingsPage() {
   } catch {
     redirect("/admin");
   }
-  const [s, media] = await Promise.all([settings(), listRecords("media")]);
+  const [s, media, home] = await Promise.all([
+    settings(),
+    listRecords("media"),
+    content("page", "inicio"),
+  ]);
   return (
     <>
       <div className="admin-heading">
@@ -19,7 +23,7 @@ export default async function SettingsPage() {
           <p>Configurações gerais · acesso exclusivo de administradores.</p>
         </div>
       </div>
-      <SettingsEditor initial={s} media={media || []} />
+      <SettingsEditor initial={s} media={media || []} homeId={home?.id} />
     </>
   );
 }

@@ -66,9 +66,14 @@ export function ContentEditor({
       />
     </label>
   );
-  function imagePicker(value: string, onChange: (s: string) => void) {
+  function imagePicker(
+    value: string,
+    onChange: (s: string) => void,
+    label = "Imagem",
+  ) {
     return (
       <ImagePicker
+        label={label}
         value={value}
         media={[
           ...media,
@@ -194,7 +199,9 @@ export function ContentEditor({
             <section className="admin-panel form-stack">
               <h2>Conteúdo principal</h2>
               <label className="field">
-                Título
+                {kind === "page" && slug === "inicio"
+                  ? "Título principal da página inicial"
+                  : "Título"}
                 <input
                   value={title}
                   onChange={(e) => {
@@ -245,8 +252,21 @@ export function ContentEditor({
                   negrito. HTML e código não são executados.
                 </small>
               </label>
+              {kind === "page" && slug === "inicio" && (
+                <p className="form-note">
+                  A imagem abaixo é o fundo do destaque principal na página
+                  inicial. Pode escolher uma imagem da biblioteca ou carregar
+                  uma fotografia nova. Guarde e publique para atualizar o site.
+                </p>
+              )}
               {kind !== "video" &&
-                imagePicker(data.image, (v) => update("image", v))}
+                imagePicker(
+                  data.image,
+                  (v) => update("image", v),
+                  kind === "page" && slug === "inicio"
+                    ? "Imagem principal da página inicial"
+                    : "Imagem",
+                )}
             </section>
             {kind === "ministry" && (
               <section className="admin-panel form-stack">
