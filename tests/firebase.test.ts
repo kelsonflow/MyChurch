@@ -15,6 +15,7 @@ test(
   { skip: !process.env.FIRESTORE_EMULATOR_HOST },
   async (t) => {
     process.env.FIREBASE_PROJECT_ID = "demo-mychurch";
+    process.env.FIREBASE_STORAGE_BUCKET = "demo-mychurch.appspot.com";
     const { auth, firestore } = await import("../src/lib/firebase-admin");
     const { writeProfile } = await import("../src/lib/store");
     const password = randomBytes(24).toString("hex");
@@ -45,7 +46,11 @@ test(
       process.execPath,
       ["node_modules/next/dist/bin/next", "start", "--port", "3012"],
       {
-        env: { ...process.env, PORT: "3012" },
+        env: {
+          ...process.env,
+          PORT: "3012",
+          NEXT_PUBLIC_SITE_URL: "http://localhost:3000",
+        },
         stdio: ["ignore", "pipe", "pipe"],
       },
     );
@@ -117,7 +122,7 @@ test(
             "Next-Action": action,
             "Content-Type": "text/plain;charset=UTF-8",
           },
-        body: JSON.stringify([input, id || "$undefined"]),
+          body: JSON.stringify([input, id || "$undefined"]),
         },
       );
       const result = await response.text();
@@ -125,6 +130,27 @@ test(
       assert.ok(result.includes('"ok":true'), result.slice(0, 1500));
     };
     const slug = `http-editor-${Date.now()}`;
+    const uploadBody = new FormData();
+    uploadBody.set(
+      "file",
+      new Blob([await readFile("public/images/community.webp")], {
+        type: "image/webp",
+      }),
+      "church.webp",
+    );
+    uploadBody.set("alt", "Fotografia de teste da igreja");
+    const uploadResponse = await fetch("http://localhost:3012/api/media", {
+      method: "POST",
+      headers: { cookie, origin: "http://localhost:3000" },
+      body: uploadBody,
+    });
+    const uploaded = await uploadResponse.json();
+    assert.equal(uploadResponse.status, 200, JSON.stringify(uploaded));
+    assert.ok(uploaded.id);
+    const privatePhoto = await get(`/media/${uploaded.id}/small`, cookie);
+    assert.equal(privatePhoto.status, 200);
+    assert.equal(privatePhoto.headers.get("content-type"), "image/webp");
+    assert.equal((await get(`/media/${uploaded.id}/large`)).status, 404);
     for (const [kind, data] of [
       ["page", { body: "Página de teste" }],
       [
@@ -135,7 +161,10 @@ test(
           eventState: "scheduled",
         },
       ],
-      ["video", { youtube: "https://youtu.be/dQw4w9WgXcQ", date: "2026-11-17" }],
+      [
+        "video",
+        { youtube: "https://youtu.be/dQw4w9WgXcQ", date: "2026-11-17" },
+      ],
       ["album", { images: [] }],
     ] as const) {
       await save({
@@ -156,7 +185,7 @@ test(
       title: "Ministério de teste",
       slug,
       status: "draft",
-      data: { body: "Texto inicial", demo: false },
+      data: { body: "Texto inicial", demo: false, image: uploaded.id },
     };
     await save(input);
     const record = (
@@ -180,6 +209,7 @@ test(
     assert.ok(
       (await published.text()).includes("Texto atualizado e publicado"),
     );
+    assert.equal((await get(`/media/${uploaded.id}/large`)).status, 200);
     assert.equal(
       (
         await firestore()

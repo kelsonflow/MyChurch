@@ -20,6 +20,7 @@ import { VideoPlayer } from "./video-player";
 import { homeDefaults, homeLabels } from "@/lib/home-sections";
 import { RichText, Photo } from "./content-view";
 import { Gallery } from "./gallery";
+import { ImagePicker } from "./image-picker";
 type Section = { title: string; body: string; hidden?: boolean };
 export function ContentEditor({
   item,
@@ -33,6 +34,8 @@ export function ContentEditor({
   revisions?: any[];
 }) {
   const router = useRouter();
+  const [uploadedMedia, setUploadedMedia] = useState<Media[]>([]);
+  const [uploads, setUploads] = useState(0);
   const [title, setTitle] = useState(item?.title || "");
   const [slug, setSlug] = useState(item?.slug || "");
   const [status, setStatus] = useState(item?.status || "draft");
@@ -45,7 +48,7 @@ export function ContentEditor({
   const [videoPreview, setVideoPreview] = useState(false);
   const previewRef = useRef<HTMLDialogElement>(null);
   const update = (key: string, value: any) =>
-    setData({ ...data, [key]: value });
+    setData((previous) => ({ ...previous, [key]: value }));
   const field = (
     key: string,
     label: string,
@@ -65,29 +68,18 @@ export function ContentEditor({
   );
   function imagePicker(value: string, onChange: (s: string) => void) {
     return (
-      <label className="field">
-        Imagem
-        <select value={value || ""} onChange={(e) => onChange(e.target.value)}>
-          <option value="">Sem imagem / padrão</option>
-          {["community", "worship"].map((n) => (
-            <option key={n} value={`/images/${n}.webp`}>
-              Arquivo institucional · {n}
-            </option>
-          ))}
-          {media.map((m) => (
-            <option key={m.id} value={m.id}>
-              {m.alt}
-            </option>
-          ))}
-        </select>
-        {value && (
-          <img
-            src={imageUrl(value, "small")}
-            alt="Pré-visualização da imagem selecionada"
-            style={{ height: 150, marginTop: 8 }}
-          />
-        )}
-      </label>
+      <ImagePicker
+        value={value}
+        media={[
+          ...media,
+          ...uploadedMedia.filter(
+            (m) => !media.some((existing) => existing.id === m.id),
+          ),
+        ]}
+        onChange={onChange}
+        onUploaded={(m) => setUploadedMedia((previous) => [...previous, m])}
+        onBusy={(delta) => setUploads((count) => count + delta)}
+      />
     );
   }
   const sections: Section[] = data.sections || [];
@@ -98,6 +90,7 @@ export function ContentEditor({
   const images: { image: string; alt: string; caption: string }[] =
     data.images || [];
   const save = () => {
+    if (uploads) return;
     start(async () => {
       try {
         const res = await saveContent(
@@ -598,7 +591,10 @@ export function ContentEditor({
                   Ocultar secção / listagem
                 </label>
               )}
-              <button className="button primary" disabled={pending}>
+              <button
+                className="button primary"
+                disabled={pending || uploads > 0}
+              >
                 {pending
                   ? "A guardar…"
                   : status === "published"

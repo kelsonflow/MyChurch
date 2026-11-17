@@ -28,6 +28,8 @@ Carregue JPEG, PNG ou WebP estático em **Imagens**, até 10 MB e 40 megapíxeis
 
 Selecione as imagens nos editores de conteúdo. Em **Álbuns**, adicione cada fotografia com texto alternativo e legenda próprios. Não publique rostos ou imagens de crianças sem as autorizações adequadas. As imagens usadas em conteúdos, inclusive rascunhos, não podem ser eliminadas: primeiro remova as referências e guarde. Uma confirmação antecede a eliminação.
 
+Também pode carregar uma fotografia diretamente no editor, sem sair da página: na área **Carregar uma nova fotografia**, escolha o ficheiro, escreva a descrição e clique em **Carregar e usar esta imagem**. A fotografia fica selecionada automaticamente e disponível na biblioteca. Clique depois em **Guardar conteúdo** ou **Guardar e publicar** para associá-la ao conteúdo. A pré-visualização mostra a imagem inteira, sem a cortar.
+
 ## Histórico e correções
 
 O editor mostra as versões anteriores com autor e data. **Recuperar** guarda o estado atual no histórico e recupera a versão escolhida como rascunho. Reveja e publique de novo. Administradores podem ainda consultar o registo de acessos/operações.
