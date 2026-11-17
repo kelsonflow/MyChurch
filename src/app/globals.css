@@ -8,6 +8,7 @@
 }
 .brand span {
   white-space: normal !important;
+  line-height: 1.25;
   max-width: 260px;
   overflow-wrap: anywhere;
   min-width: 0;
