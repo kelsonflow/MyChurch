@@ -68,6 +68,11 @@ export async function SiteShell({ children }: { children: React.ReactNode }) {
           <div>
             <h3>Visite-nos</h3>
             <p>{s.address || "Morada por confirmar pela igreja."}</p>
+            {s.map && (
+              <a href={s.map} target="_blank" rel="noopener noreferrer">
+                Abrir no GPS <MapPin size={14} aria-hidden="true" />
+              </a>
+            )}
             <p>{s.schedule || "Horários por confirmar."}</p>
             <Link href="/contactos">
               Contactos <ArrowRight size={14} />
@@ -107,7 +112,6 @@ export async function SiteShell({ children }: { children: React.ReactNode }) {
           <div>
             <Link href="/privacidade">Privacidade</Link>
             <Link href="/termos">Termos</Link>
-            <a href="/sitemap.xml">Mapa do site</a>
           </div>
         </div>
       </footer>

@@ -2,6 +2,7 @@ import { settings } from "@/lib/content";
 import { configured } from "@/lib/firebase";
 import { PageIntro } from "@/components/content-view";
 import { ContactForm } from "@/components/contact-form";
+import { ChurchMap } from "@/components/church-map";
 export const metadata = {
   title: "Contactos",
   alternates: { canonical: "/contactos" },
@@ -23,10 +24,11 @@ export default async function Contact() {
             <p>{s.address || "A morada está a ser confirmada pela igreja."}</p>
             {s.map && (
               <a href={s.map} target="_blank" rel="noopener noreferrer">
-                Obter direções ↗
+                Abrir no GPS ↗
               </a>
             )}
           </div>
+          {s.address && <ChurchMap address={s.address} />}
           <div className="contact-meta">
             <h3>Quando nos encontramos</h3>
             <p className="preserve">
