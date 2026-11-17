@@ -17,7 +17,7 @@ test(
     process.env.FIREBASE_PROJECT_ID = "demo-mychurch";
     process.env.FIREBASE_STORAGE_BUCKET = "demo-mychurch.appspot.com";
     const { auth, firestore } = await import("../src/lib/firebase-admin");
-    const { writeProfile } = await import("../src/lib/store");
+    const { writeProfile, writeSettings } = await import("../src/lib/store");
     const password = randomBytes(24).toString("hex");
     const email = `session-${Date.now()}@example.test`;
     const user = await auth().createUser({ email, password });
@@ -210,6 +210,48 @@ test(
       (await published.text()).includes("Texto atualizado e publicado"),
     );
     assert.equal((await get(`/media/${uploaded.id}/large`)).status, 200);
+    const { defaultSettings } = await import("../src/lib/demo");
+    await writeSettings({ ...defaultSettings, logo: uploaded.id }, "fixture");
+    for (const page of [
+      "/",
+      "/contactos",
+      "/admin/login",
+      "/admin/recuperar",
+      "/admin",
+    ]) {
+      const branded = await get(page, page === "/admin" ? cookie : undefined);
+      const html = await branded.text();
+      assert.equal(branded.status, 200, page);
+      assert.ok(
+        html.includes(`/media/${uploaded.id}/small`),
+        `Custom brand on ${page}`,
+      );
+      assert.ok(
+        html.includes(`/api/brand-icon?v=${uploaded.id}`),
+        `Custom favicon on ${page}`,
+      );
+      assert.ok(
+        !html.includes('rel="icon" href="/icon.svg'),
+        "Static icon must not override the configured logo",
+      );
+    }
+    const { default: sharp } = await import("sharp");
+    for (const size of [64, 180]) {
+      const icon = await get(`/api/brand-icon?v=${uploaded.id}&size=${size}`);
+      assert.equal(icon.status, 200);
+      assert.equal(icon.headers.get("content-type"), "image/png");
+      const meta = await sharp(
+        Buffer.from(await icon.arrayBuffer()),
+      ).metadata();
+      assert.equal(meta.width, size);
+      assert.equal(meta.height, size);
+    }
+    await writeSettings({ ...defaultSettings, logo: "" }, "fixture");
+    assert.equal(
+      (await firestore().doc(`media/${uploaded.id}`).get()).get("logo"),
+      false,
+    );
+    assert.equal((await get("/api/brand-icon?v=default")).status, 200);
     assert.equal(
       (
         await firestore()

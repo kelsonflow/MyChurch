@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { imageUrl } from "@/lib/model";
-export function Brand({
+import { settings } from "@/lib/content";
+export async function Brand({
   light = false,
   name,
   logo,
@@ -9,6 +10,9 @@ export function Brand({
   name?: string;
   logo?: string;
 }) {
+  const saved = await settings();
+  name ??= saved.name;
+  logo ??= saved.logo;
   return (
     <Link
       href="/"

@@ -9,12 +9,14 @@ export function ImagePicker({
   onChange,
   onUploaded,
   onBusy,
+  label = "Imagem",
 }: {
   value: string;
   media: Media[];
   onChange: (value: string) => void;
   onUploaded: (media: Media) => void;
   onBusy: (delta: number) => void;
+  label?: string;
 }) {
   const fileInput = useRef<HTMLInputElement>(null);
   const [file, setFile] = useState<File | null>(null);
@@ -76,7 +78,7 @@ export function ImagePicker({
   return (
     <div className="form-stack image-picker">
       <label className="field">
-        Imagem
+        {label}
         <select
           value={value || ""}
           disabled={busy}

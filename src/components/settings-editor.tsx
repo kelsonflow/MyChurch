@@ -2,6 +2,8 @@
 import { useState, useTransition } from "react";
 import { saveSettings, type ActionResult } from "@/app/admin/actions";
 import type { Settings, Media } from "@/lib/model";
+import { useRouter } from "next/navigation";
+import { ImagePicker } from "./image-picker";
 export function SettingsEditor({
   initial,
   media,
@@ -12,6 +14,9 @@ export function SettingsEditor({
   const [data, setData] = useState(initial);
   const [result, setResult] = useState<ActionResult>({});
   const [pending, start] = useTransition();
+  const [uploadedMedia, setUploadedMedia] = useState<Media[]>([]);
+  const [uploads, setUploads] = useState(0);
+  const router = useRouter();
   const field = (key: keyof Settings, label: string, type = "text") => (
     <label className="field">
       {label}
@@ -26,7 +31,19 @@ export function SettingsEditor({
     <form
       onSubmit={(e) => {
         e.preventDefault();
-        start(async () => setResult(await saveSettings(data)));
+        if (uploads) return;
+        start(async () => {
+          try {
+            const response = await saveSettings(data);
+            setResult(response);
+            if (response.ok) router.refresh();
+          } catch {
+            setResult({
+              message:
+                "Não foi possível guardar. Verifique a ligação e tente novamente.",
+            });
+          }
+        });
       }}
       className="form-stack"
     >
@@ -36,20 +53,30 @@ export function SettingsEditor({
         {field("tagline", "Frase de identidade / rodapé")}
         {field("contactTitle", "Título do convite de contacto")}
         {field("contactText", "Texto do convite de contacto")}
-        <label className="field">
-          Logótipo
-          <select
-            value={data.logo}
-            onChange={(e) => setData({ ...data, logo: e.target.value })}
-          >
-            <option value="">Marca tipográfica padrão</option>
-            {media.map((m) => (
-              <option key={m.id} value={m.id}>
-                {m.alt}
-              </option>
-            ))}
-          </select>
-        </label>
+        <h3>Logótipo e ícone do site</h3>
+        <p className="form-note">
+          O logótipo escolhido aparece no cabeçalho, rodapé, painel e páginas de
+          acesso. O ícone do navegador é gerado a partir da mesma imagem, sem a
+          cortar. Para melhor leitura, use um PNG quadrado com fundo
+          transparente.
+        </p>
+        <ImagePicker
+          label="Logótipo da igreja"
+          value={data.logo}
+          media={[
+            ...media,
+            ...uploadedMedia.filter(
+              (m) => !media.some((existing) => existing.id === m.id),
+            ),
+          ]}
+          onChange={(logo) => setData((previous) => ({ ...previous, logo }))}
+          onUploaded={(m) => setUploadedMedia((previous) => [...previous, m])}
+          onBusy={(delta) => setUploads((count) => count + delta)}
+        />
+        <p className="form-note">
+          Escolha «Sem imagem / padrão» para repor a marca original. Guarde as
+          configurações para aplicar a alteração em todo o site.
+        </p>
         <div className="form-grid">
           {field("email", "Email institucional", "email")}
           {field("phone", "Telefone")}
@@ -90,7 +117,7 @@ export function SettingsEditor({
         </p>
       </section>
       <div className="admin-actions">
-        <button className="button primary" disabled={pending}>
+        <button className="button primary" disabled={pending || uploads > 0}>
           {pending ? "A guardar…" : "Guardar configurações"}
         </button>
         <div aria-live="polite">

@@ -23,6 +23,22 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     ...baseMetadata,
     description: s.seoDescription,
+    icons: {
+      icon: [
+        {
+          url: `/api/brand-icon?v=${encodeURIComponent(s.logo || "default")}&size=64`,
+          type: "image/png",
+          sizes: "64x64",
+        },
+      ],
+      apple: [
+        {
+          url: `/api/brand-icon?v=${encodeURIComponent(s.logo || "default")}&size=180`,
+          type: "image/png",
+          sizes: "180x180",
+        },
+      ],
+    },
     openGraph: {
       ...baseMetadata.openGraph,
       description: s.seoDescription,
