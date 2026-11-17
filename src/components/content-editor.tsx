@@ -99,15 +99,22 @@ export function ContentEditor({
     data.images || [];
   const save = () => {
     start(async () => {
-      const res = await saveContent(
-        { kind, title, slug, status, data },
-        currentId,
-      );
-      setResult(res);
-      if (res.ok && res.id) {
-        setCurrentId(res.id);
-        if (!currentId) router.replace(`/admin/conteudos/${res.id}`);
-        router.refresh();
+      try {
+        const res = await saveContent(
+          { kind, title, slug, status, data },
+          currentId,
+        );
+        setResult(res);
+        if (res.ok && res.id) {
+          setCurrentId(res.id);
+          if (!currentId) router.replace(`/admin/conteudos/${res.id}`);
+          router.refresh();
+        }
+      } catch {
+        setResult({
+          message:
+            "Não foi possível guardar. Verifique a ligação e tente novamente. Se o painel foi atualizado, copie o texto antes de recarregar a página.",
+        });
       }
     });
   };

@@ -4,9 +4,9 @@ A implementação atual usa Firebase Hosting, Cloud Run, Firestore, Firebase Aut
 
 - TypeScript e build Next.js de produção aprovados.
 - Sete testes de domínio aprovados.
-- Três testes de integração aprovados nos emuladores oficiais Authentication/Firestore/Storage: sessão válida e suspensão imediata, regras de acesso e transações.
+- Três testes de integração aprovados nos emuladores oficiais Authentication/Firestore/Storage: sessão válida e suspensão imediata, regras de acesso e transações. O teste HTTP autenticado abre os cinco editores e os seus ficheiros JavaScript, cria conteúdos nas cinco categorias, edita e publica um ministério e confirma a alteração na página pública e no histórico.
 - 23 verificações HTTP aprovadas no site público Firebase Hosting: páginas, autenticação privada, calendário, 404, rejeição de origens e CSP.
-- Cloud Run publicado na revisão `mychurch-00002-dzg`, com rollout Firebase Hosting concluído em `https://mychurch-kelsonflow.web.app`.
+- Cloud Run e Firebase Hosting publicados em `https://mychurch-kelsonflow.web.app`. Cada nova compilação identifica a versão nos URLs dos recursos e na navegação para proteger sessões abertas durante atualizações.
 - Regras Firestore/Storage compiladas e publicadas no projeto real.
 - Registo público desativado e política mínima de 12 caracteres configurada no Firebase Authentication.
 - Conteúdos demonstrativos inicializados no Firestore real.

@@ -11,7 +11,7 @@ import { ref, getBytes, uploadBytes } from "firebase/storage";
 import { spawn } from "node:child_process";
 import { randomBytes, createHash } from "node:crypto";
 test(
-  "The production server accepts a Firebase session and immediately rejects it after suspension",
+  "An editor can open every editor, create, edit and publish through HTTP, and loses access after suspension",
   { skip: !process.env.FIRESTORE_EMULATOR_HOST },
   async (t) => {
     process.env.FIREBASE_PROJECT_ID = "demo-mychurch";
@@ -79,6 +79,116 @@ test(
     const adminOnly = await get("/admin/utilizadores", cookie);
     assert.equal(adminOnly.status, 307);
     assert.equal(adminOnly.headers.get("location"), "/admin");
+    const scriptPaths = new Set<string>();
+    for (const kind of ["page", "event", "video", "ministry", "album"]) {
+      const editor = await get(`/admin/conteudos/novo?tipo=${kind}`, cookie);
+      const html = await editor.text();
+      assert.equal(editor.status, 200, kind);
+      assert.ok(html.includes("Algo novo para partilhar."), kind);
+      assert.ok(!html.includes("Não foi possível carregar esta página."), kind);
+      for (const match of html.matchAll(/<script[^>]+src="([^"]+)"/g)) {
+        scriptPaths.add(match[1].replaceAll("&amp;", "&"));
+      }
+    }
+    for (const path of scriptPaths) {
+      const script = await get(path);
+      assert.equal(script.status, 200, path);
+      assert.match(
+        script.headers.get("content-type") || "",
+        /javascript/,
+        path,
+      );
+    }
+    const manifest = JSON.parse(
+      await readFile(".next/server/server-reference-manifest.json", "utf8"),
+    );
+    const action = Object.entries<any>(manifest.node).find(
+      ([, value]) => value.exportedName === "saveContent",
+    )?.[0];
+    assert.ok(action, "The production build contains the saveContent action");
+    const save = async (input: unknown, id?: string) => {
+      const response = await fetch(
+        "http://localhost:3012/admin/conteudos/novo",
+        {
+          method: "POST",
+          headers: {
+            cookie,
+            origin: "http://localhost:3012",
+            "Next-Action": action,
+            "Content-Type": "text/plain;charset=UTF-8",
+          },
+        body: JSON.stringify([input, id || "$undefined"]),
+        },
+      );
+      const result = await response.text();
+      assert.equal(response.status, 200, result.slice(0, 1000));
+      assert.ok(result.includes('"ok":true'), result.slice(0, 1500));
+    };
+    const slug = `http-editor-${Date.now()}`;
+    for (const [kind, data] of [
+      ["page", { body: "Página de teste" }],
+      [
+        "event",
+        {
+          start: "2026-12-20T10:00",
+          end: "2026-12-20T12:00",
+          eventState: "scheduled",
+        },
+      ],
+      ["video", { youtube: "https://youtu.be/dQw4w9WgXcQ", date: "2026-11-17" }],
+      ["album", { images: [] }],
+    ] as const) {
+      await save({
+        kind,
+        title: `Teste ${kind}`,
+        slug: `${slug}-${kind}`,
+        status: "draft",
+        data,
+      });
+      const created = await firestore()
+        .collection("content")
+        .where("slug", "==", `${slug}-${kind}`)
+        .get();
+      assert.equal(created.size, 1, `Persisted ${kind}`);
+    }
+    const input = {
+      kind: "ministry",
+      title: "Ministério de teste",
+      slug,
+      status: "draft",
+      data: { body: "Texto inicial", demo: false },
+    };
+    await save(input);
+    const record = (
+      await firestore().collection("content").where("slug", "==", slug).get()
+    ).docs[0];
+    assert.ok(record);
+    const edit = await get(`/admin/conteudos/${record.id}`, cookie);
+    assert.equal(edit.status, 200);
+    assert.ok((await edit.text()).includes("Ministério de teste"));
+    assert.equal((await get(`/ministerios/${slug}`)).status, 404);
+    await save(
+      {
+        ...input,
+        status: "published",
+        data: { ...input.data, body: "Texto atualizado e publicado" },
+      },
+      record.id,
+    );
+    const published = await get(`/ministerios/${slug}`);
+    assert.equal(published.status, 200);
+    assert.ok(
+      (await published.text()).includes("Texto atualizado e publicado"),
+    );
+    assert.equal(
+      (
+        await firestore()
+          .collection("revisions")
+          .where("content_id", "==", record.id)
+          .get()
+      ).size,
+      1,
+    );
     await writeProfile(
       { id: user.uid, email, role: "editor", status: "suspended" },
       "fixture",

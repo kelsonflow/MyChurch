@@ -122,7 +122,9 @@ export async function saveContent(
       ok: true,
       id: result,
       message:
-        "Conteúdo guardado. A versão publicada já está disponível no site.",
+        (input as { status?: string }).status === "published"
+          ? "Conteúdo guardado e publicado no site."
+          : "Conteúdo guardado. Esta versão não está publicada no site.",
     };
   } catch (e) {
     return failure(e);

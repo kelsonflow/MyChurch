@@ -22,6 +22,8 @@ gcloud builds submit --config=cloudbuild.yaml --service-account=projects/mychurc
 
 Espere o build terminar com `SUCCESS`. O nome da imagem inclui o ID devolvido pelo Cloud Build. O Dockerfile usa `npm ci`, compila Next.js e executa o output standalone como utilizador sem privilégios. `.env`, dependências locais e credenciais estão excluídos do upload.
 
+O Cloud Build passa o seu ID como `NEXT_DEPLOYMENT_ID` à compilação. O Next.js usa esse identificador nos pedidos de navegação e nos URLs dos ficheiros estáticos, evitando misturar o editor antigo com os ficheiros de uma nova publicação. Após uma falha de carregamento, a opção «Recarregar painel» faz uma navegação completa para a versão atual.
+
 Publique a imagem no serviço Cloud Run mantendo a identidade e os limites acima. As variáveis de runtime são `FIREBASE_PROJECT_ID`, `FIREBASE_STORAGE_BUCKET`, `FIREBASE_WEB_API_KEY` e `NEXT_PUBLIC_SITE_URL`. A chave Web é configuração pública Firebase, usada pelo servidor para a API de Authentication. `CONTACT_HASH_SECRET` é referenciado a partir do Secret Manager, nunca passado em argumentos ou guardado no Git.
 
 O URL canónico também é definido na compilação Docker pelo argumento `NEXT_PUBLIC_SITE_URL`. Se o domínio mudar, atualize esse argumento, as variáveis runtime, os domínios autorizados de Authentication e a lista `serverActions.allowedOrigins` do Next.js.
