@@ -34,7 +34,6 @@ export async function Brand({
       )}
       <span>
         {name || "Missão aos Povos"}
-        <small>ASSEMBLEIA DE DEUS · PORTUGAL</small>
       </span>
     </Link>
   );
