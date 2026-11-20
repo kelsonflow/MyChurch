@@ -115,6 +115,20 @@ export function SettingsEditor({
         <label className="checkbox">
           <input
             type="checkbox"
+            checked={data.contactEnabled || data.confirmed}
+            disabled={data.confirmed}
+            onChange={(e) =>
+              setData({ ...data, contactEnabled: e.target.checked })
+            }
+          />
+          Receber mensagens pelo formulário de contacto.
+        </label>
+        <p className="form-note">
+          As mensagens ficam disponíveis em Mensagens recebidas no painel.
+        </p>
+        <label className="checkbox">
+          <input
+            type="checkbox"
             checked={data.confirmed}
             onChange={(e) => setData({ ...data, confirmed: e.target.checked })}
           />

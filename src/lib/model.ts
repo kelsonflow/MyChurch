@@ -200,5 +200,6 @@ export const settingsSchema = z.object({
   contactText: z.string().max(500),
   tagline: z.string().max(200),
   confirmed: z.boolean(),
+  contactEnabled: z.boolean().default(false),
 });
 export type Settings = z.infer<typeof settingsSchema>;

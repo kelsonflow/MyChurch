@@ -53,6 +53,10 @@ O cookie `__session` contém o cookie de sessão Firebase e um nonce aleatório.
 
 ## Verificações
 
+O formulário pode ser ativado em Configurações através de «Receber mensagens pelo formulário de contacto» (`settings/general.data.contactEnabled`). Esta opção permite receber mensagens sem marcar os restantes dados institucionais como validados. As mensagens são guardadas na coleção privada `messages`, apresentada em «Mensagens recebidas». As notificações por email só são enviadas se `RESEND_API_KEY`, `MAIL_FROM` e `CONTACT_NOTIFY_EMAIL` estiverem configurados; a receção no painel não depende delas. O segredo `CONTACT_HASH_SECRET` continua obrigatório para limitar os envios.
+
+As rotas de contacto e upload verificam a origem contra uma lista explícita dos endereços públicos da igreja, incluindo `adportugal.pt` e os endereços Firebase/Cloud Run do projeto. Não confiam no cabeçalho Host enviado pelo cliente. O URL canónico permanece no endereço Firebase enquanto o certificado do domínio personalizado está em validação.
+
 Confirme HTTP 200, `/admin` sem sessão a encaminhar para login, sitemap/canonicals para o domínio HTTPS, bloqueio de signup, ativação dos dois administradores, edição/publicação e uploads. Verifique o último rollout e a revisão efetivamente fixada no Hosting. A existência de um build não prova que o serviço está publicado.
 
 Referências oficiais: [Hosting com Cloud Run](https://firebase.google.com/docs/hosting/cloud-run), [cookies no Hosting](https://firebase.google.com/docs/hosting/manage-cache), [sessões Authentication](https://firebase.google.com/docs/auth/admin/manage-cookies), [regras Firestore](https://firebase.google.com/docs/firestore/security/get-started).

@@ -5,6 +5,9 @@ const config: NextConfig = {
   experimental: {
     serverActions: {
       allowedOrigins: [
+        "adportugal.pt",
+        "www.adportugal.pt",
+        "mychurch-216062947807.europe-west4.run.app",
         "mychurch-kelsonflow.web.app",
         "mychurch-kelsonflow.firebaseapp.com",
         "project-b8361f5e-fc32-4291-b37.web.app",

@@ -4,6 +4,7 @@ import { configured, firestore } from "@/lib/firebase-admin";
 import { rateLimit } from "@/lib/store";
 import { settings } from "@/lib/content";
 import { limitedBody } from "@/lib/request-body";
+import { trustedOrigin } from "@/lib/trusted-origin";
 const schema = z.object({
   name: z.string().trim().min(2).max(100),
   email: z.email().max(200),
@@ -12,10 +13,7 @@ const schema = z.object({
   website: z.string().max(0),
 });
 export async function POST(req: Request) {
-  if (
-    req.headers.get("origin") !==
-    new URL(process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000").origin
-  )
+  if (!trustedOrigin(req.headers.get("origin")))
     return Response.json(
       { message: "Origem do pedido inválida." },
       { status: 403 },
@@ -43,7 +41,7 @@ export async function POST(req: Request) {
         { status: 400 },
       );
     const s = await settings();
-    if (!s.confirmed)
+    if (!s.contactEnabled && !s.confirmed)
       return Response.json(
         { message: "O formulário aguarda validação pela igreja." },
         { status: 503 },

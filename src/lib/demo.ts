@@ -18,6 +18,7 @@ export const defaultSettings: Settings = {
   contactText: "Uma pergunta, um pedido de oração ou simplesmente um olá.",
   tagline: "Fé que nos une. Amor que nos move.",
   confirmed: false,
+  contactEnabled: false,
 };
 const make = (
   kind: Content["kind"],

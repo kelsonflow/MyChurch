@@ -3,12 +3,10 @@ import { randomUUID } from "node:crypto";
 import { staff } from "@/lib/firebase";
 import { firestore, bucket } from "@/lib/firebase-admin";
 import { limitedBody } from "@/lib/request-body";
+import { trustedOrigin } from "@/lib/trusted-origin";
 export const runtime = "nodejs";
 export async function POST(req: Request) {
-  if (
-    req.headers.get("origin") !==
-    new URL(process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000").origin
-  )
+  if (!trustedOrigin(req.headers.get("origin")))
     return Response.json({ message: "Origem inválida." }, { status: 403 });
   try {
     await staff();

@@ -66,7 +66,9 @@ export default async function Contact() {
         </div>
         <div>
           <h2>Envie-nos uma mensagem</h2>
-          <ContactForm enabled={configured() && s.confirmed} />
+          <ContactForm
+            enabled={configured() && (s.contactEnabled || s.confirmed)}
+          />
         </div>
       </div>
     </>
