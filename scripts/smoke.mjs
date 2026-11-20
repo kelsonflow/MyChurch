@@ -1,7 +1,17 @@
 import assert from "node:assert/strict";
 const base = new URL(process.argv[2] || "http://localhost:3000");
-if (!["localhost", "127.0.0.1", "[::1]", "mychurch-kelsonflow.web.app"].includes(base.hostname))
-  throw new Error("O smoke test só aceita o servidor local ou o site MyChurch.");
+if (
+  ![
+    "localhost",
+    "127.0.0.1",
+    "[::1]",
+    "mychurch-kelsonflow.web.app",
+    "project-b8361f5e-fc32-4291-b37.web.app",
+  ].includes(base.hostname)
+)
+  throw new Error(
+    "O smoke test só aceita o servidor local ou o site MyChurch.",
+  );
 const pages = [
   "/",
   "/a-igreja",
@@ -47,7 +57,9 @@ for (const path of ["/api/contact", "/api/media"]) {
   });
   assert.equal(response.status, 403, path);
 }
-const eventHtml = await (await fetch(new URL("/agenda/celebracao-demo", base))).text();
+const eventHtml = await (
+  await fetch(new URL("/agenda/celebracao-demo", base))
+).text();
 const calendarPath = eventHtml.match(/href="(\/api\/calendar\/[^"?]+)"/)?.[1];
 assert.ok(calendarPath, "Ligação do calendário no evento");
 const calendar = await fetch(new URL(calendarPath, base));

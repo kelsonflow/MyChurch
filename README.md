@@ -10,7 +10,9 @@ Site e painel editorial em Next.js App Router, TypeScript e Tailwind. A stack de
 | Fotografias e versões WebP | Cloud Storage for Firebase |
 | Convites, permissões e validação de escritas | Servidor Next.js no Cloud Run |
 
-Projeto: `mychurch-kelsonflow`. Conta técnica: `mychurch-runtime`. Região do servidor, Firestore e imagens: `europe-west4`. O plano Blaze está associado à conta autorizada e tem um alerta mensal de 5 EUR. **O alerta não interrompe cobranças superiores.** O servidor tem zero instâncias mínimas e duas máximas.
+Projeto: `project-b8361f5e-fc32-4291-b37`. Conta técnica: `mychurch-runtime`. Região do servidor, Firestore e imagens: `europe-west4`. O plano Blaze está associado à conta autorizada e tem um alerta mensal de 5 EUR. **O alerta não interrompe cobranças superiores.** O servidor tem zero instâncias mínimas e duas máximas.
+
+[Site publicado](https://project-b8361f5e-fc32-4291-b37.web.app) · [Painel](https://project-b8361f5e-fc32-4291-b37.web.app/admin) · [Consola Firebase](https://console.firebase.google.com/project/project-b8361f5e-fc32-4291-b37/overview). A [migração para a conta da igreja](docs/MIGRACAO-PROJETO.md) preservou os dados e acessos existentes; o endereço antigo redireciona para este site.
 
 ## Abrir localmente
 

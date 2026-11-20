@@ -1,0 +1,42 @@
+{
+  "emulators": {
+    "storage": {
+      "port": 9199
+    },
+    "auth": {
+      "port": 9099
+    },
+    "firestore": {
+      "port": 8085
+    },
+    "singleProjectMode": true,
+    "ui": {
+      "enabled": false
+    }
+  },
+  "storage": [
+    {
+      "rules": "storage.rules",
+      "bucket": "mychurch-kelsonflow-media"
+    }
+  ],
+  "firestore": {
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
+  },
+  "hosting": {
+    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+    "site": "mychurch-kelsonflow",
+    "public": "hosting-public",
+    "rewrites": [
+      {
+        "source": "**",
+        "run": {
+          "pinTag": true,
+          "serviceId": "mychurch",
+          "region": "europe-west4"
+        }
+      }
+    ]
+  }
+}

@@ -17,7 +17,7 @@
   "storage": [
     {
       "rules": "storage.rules",
-      "bucket": "mychurch-kelsonflow-media"
+      "bucket": "project-b8361f5e-fc32-4291-b37-media"
     }
   ],
   "firestore": {
@@ -26,7 +26,7 @@
   },
   "hosting": {
     "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
-    "site": "mychurch-kelsonflow",
+    "site": "project-b8361f5e-fc32-4291-b37",
     "public": "hosting-public",
     "rewrites": [
       {

@@ -1,5 +1,7 @@
 {
   "projects": {
-    "default": "mychurch-kelsonflow"
+    "default": "project-b8361f5e-fc32-4291-b37",
+    "legacy": "mychurch-kelsonflow",
+    "church": "project-b8361f5e-fc32-4291-b37"
   }
 }

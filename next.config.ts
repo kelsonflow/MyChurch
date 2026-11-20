@@ -7,6 +7,8 @@ const config: NextConfig = {
       allowedOrigins: [
         "mychurch-kelsonflow.web.app",
         "mychurch-kelsonflow.firebaseapp.com",
+        "project-b8361f5e-fc32-4291-b37.web.app",
+        "project-b8361f5e-fc32-4291-b37.firebaseapp.com",
       ],
     },
   },

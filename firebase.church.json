@@ -1,0 +1,42 @@
+{
+  "emulators": {
+    "storage": {
+      "port": 9199
+    },
+    "auth": {
+      "port": 9099
+    },
+    "firestore": {
+      "port": 8085
+    },
+    "singleProjectMode": true,
+    "ui": {
+      "enabled": false
+    }
+  },
+  "storage": [
+    {
+      "rules": "storage.rules",
+      "bucket": "project-b8361f5e-fc32-4291-b37-media"
+    }
+  ],
+  "firestore": {
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
+  },
+  "hosting": {
+    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+    "site": "project-b8361f5e-fc32-4291-b37",
+    "public": "hosting-public",
+    "rewrites": [
+      {
+        "source": "**",
+        "run": {
+          "pinTag": true,
+          "serviceId": "mychurch",
+          "region": "europe-west4"
+        }
+      }
+    ]
+  }
+}

@@ -2,22 +2,25 @@
 
 ## Recursos
 
-- Projeto: `mychurch-kelsonflow`.
-- Site Hosting: `mychurch-kelsonflow`; URL publicada: `https://mychurch-kelsonflow.web.app`.
+- Projeto: `project-b8361f5e-fc32-4291-b37`.
+- Conta Google administradora: `adportugal.pt.adm@gmail.com`; faturação da igreja `011B79-485995-66231C`.
+- Site Hosting: `project-b8361f5e-fc32-4291-b37`; URL publicada: `https://project-b8361f5e-fc32-4291-b37.web.app`.
 - Cloud Run: serviço `mychurch`, região `europe-west4`, Node.js 22, 1 CPU, 1 GiB, concorrência 20, mínimo 0 e máximo 2 instâncias.
 - Firestore: base `(default)`, localização `europe-west4`.
-- Storage: bucket privado `mychurch-kelsonflow-media`, localização `europe-west4`.
-- Conta runtime: `mychurch-runtime@mychurch-kelsonflow.iam.gserviceaccount.com`.
-- Conta build: `mychurch-build@mychurch-kelsonflow.iam.gserviceaccount.com`.
+- Storage: bucket privado `project-b8361f5e-fc32-4291-b37-media`, localização `europe-west4`.
+- Conta runtime: `mychurch-runtime@project-b8361f5e-fc32-4291-b37.iam.gserviceaccount.com`.
+- Conta build: `mychurch-build@project-b8361f5e-fc32-4291-b37.iam.gserviceaccount.com`.
 - Secret Manager: `mychurch-contact-hash`, apenas para o servidor.
 - Orçamento: alerta de 5 EUR/mês, com limiares de 50%, 90% e 100%. **Não é um corte automático nem um teto de gastos.**
 
 O Firebase Hosting encaminha o tráfego para Cloud Run. A criação de acessos e a atribuição de perfis são executadas no servidor Next.js, sem necessidade de uma segunda aplicação Cloud Functions.
 
+A migração e a configuração da origem preservada estão documentadas em [MIGRACAO-PROJETO.md](MIGRACAO-PROJETO.md). O endereço antigo encaminha para o novo. O projeto adicional `project-b8361f5e-fc32-42-6583e` não é o projeto de produção.
+
 ## Compilar e publicar
 
 ```powershell
-gcloud builds submit --config=cloudbuild.yaml --service-account=projects/mychurch-kelsonflow/serviceAccounts/mychurch-build@mychurch-kelsonflow.iam.gserviceaccount.com --region=europe-west4 --project=mychurch-kelsonflow --async
+gcloud builds submit --config=cloudbuild.yaml --service-account=projects/project-b8361f5e-fc32-4291-b37/serviceAccounts/mychurch-build@project-b8361f5e-fc32-4291-b37.iam.gserviceaccount.com --region=europe-west4 --project=project-b8361f5e-fc32-4291-b37 --async
 ```
 
 Espere o build terminar com `SUCCESS`. O nome da imagem inclui o ID devolvido pelo Cloud Build. O Dockerfile usa `npm ci`, compila Next.js e executa o output standalone como utilizador sem privilégios. `.env`, dependências locais e credenciais estão excluídos do upload.
@@ -31,7 +34,7 @@ O URL canónico também é definido na compilação Docker pelo argumento `NEXT_
 Após Cloud Run estar pronto:
 
 ```powershell
-firebase deploy --only hosting,firestore:rules,firestore:indexes,storage --project mychurch-kelsonflow
+firebase deploy --only hosting,firestore:rules,firestore:indexes,storage --project project-b8361f5e-fc32-4291-b37
 ```
 
 Em PowerShell, coloque a lista de `--only` entre aspas se executar o wrapper `.ps1`. O Hosting usa `pinTag` para associar o rollout à revisão Cloud Run atual. Os endpoints internos reservados `/__/auth/` continuam a ser servidos pelo Firebase para os emails de ativação/recuperação.
