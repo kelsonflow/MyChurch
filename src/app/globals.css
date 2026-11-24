@@ -1927,6 +1927,9 @@ td .badge {
     grid-template-columns: 1fr;
     gap: 35px;
   }
+  .video-label-spacer {
+    display: none;
+  }
   .video-consent {
     padding: 16px;
   }

@@ -48,7 +48,12 @@ export default async function Messages({
           <div className="video-list">
             {list.map((v, i) => (
               <article key={v.id}>
-                {i === 0 && <p className="eyebrow">MENSAGEM MAIS RECENTE</p>}
+                <p
+                  className={`eyebrow${i > 0 ? " video-label-spacer" : ""}`}
+                  aria-hidden={i > 0 ? true : undefined}
+                >
+                  {i === 0 ? "MENSAGEM MAIS RECENTE" : "\u00a0"}
+                </p>
                 <VideoPlayer url={v.data.youtube} title={v.title} />
                 <h2>{v.title}</h2>
                 <p className="caption">
