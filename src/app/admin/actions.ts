@@ -25,7 +25,11 @@ import type { Profile } from "@/lib/access";
 export type ActionResult = { ok?: boolean; message?: string; id?: string };
 const failure = (e: unknown) => ({
   message:
-    e instanceof Error ? e.message : "Não foi possível concluir a operação.",
+    e instanceof z.ZodError
+      ? e.issues.map((issue) => issue.message).join(" ")
+      : e instanceof Error
+        ? e.message
+        : "Não foi possível concluir a operação.",
 });
 async function authLimit(action: string, email: string) {
   const ip =

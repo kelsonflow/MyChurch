@@ -27,6 +27,8 @@ test("YouTube accepts only HTTPS allowlisted hosts and eleven-character identifi
     "https://youtu.be/dQw4w9WgXcQ",
     "https://www.youtube.com/watch?v=dQw4w9WgXcQ&feature=share",
     "https://youtube.com/shorts/dQw4w9WgXcQ",
+    "https://www.youtube.com/live/dQw4w9WgXcQ?si=shared-link",
+    "https://m.youtube.com/live/dQw4w9WgXcQ/",
   ])
     assert.equal(youtubeId(url), "dQw4w9WgXcQ");
   for (const url of [
@@ -36,8 +38,16 @@ test("YouTube accepts only HTTPS allowlisted hosts and eleven-character identifi
     "https://youtu.be/short",
     "https://user@youtu.be/dQw4w9WgXcQ",
     "https://youtu.be:8443/dQw4w9WgXcQ",
+    "https://www.youtube.com/live/short",
+    "https://www.youtube.com/live/dQw4w9WgXcQ/extra",
   ])
     assert.equal(youtubeId(url), null);
+});
+test("YouTube accepts the live link reported by the church", () => {
+  assert.equal(
+    youtubeId("https://www.youtube.com/live/uSQKg2b1gL4?si=N52EkwXBWRNcYPYO"),
+    "uSQKg2b1gL4",
+  );
 });
 test("Lisbon editorial time observes DST and rejects nonexistent spring time", () => {
   assert.equal(lisbonToUtc("2026-01-10T10:00"), "2026-01-10T10:00:00.000Z");

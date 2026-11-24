@@ -120,7 +120,8 @@ export const contentSchema = z
     if (v.kind === "video" && !youtubeId(v.data.youtube || ""))
       ctx.addIssue({
         code: "custom",
-        message: "Ligação do YouTube inválida.",
+        message:
+          "Ligação do YouTube inválida. Use uma ligação de vídeo, transmissão em direto ou Shorts.",
         path: ["data", "youtube"],
       });
     if (v.kind === "video" && !/^\d{4}-\d{2}-\d{2}$/.test(v.data.date || ""))
@@ -143,7 +144,8 @@ export function youtubeId(value: string): string | null {
       id =
         u.pathname === "/watch"
           ? u.searchParams.get("v")
-          : /^\/(?:shorts|embed)\/([^/]+)$/.exec(u.pathname)?.[1] || null;
+          : /^\/(?:shorts|embed|live)\/([^/]+)\/?$/.exec(u.pathname)?.[1] ||
+            null;
     return id && /^[\w-]{11}$/.test(id) ? id : null;
   } catch {
     return null;
